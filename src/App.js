@@ -5,11 +5,13 @@ import './App.css';
 
 import HomePage from './pages/homepage/homepage.component.jsx';
 import ShopPage from './pages/shop/shop.component.jsx';
+import Header from './components/header/header.component.jsx';
 
 
 function App() {
   return (
     <div>
+      <Header /> {/* Al header lo queremos fuera del switch, porque independientemente de la página en la que se esté, se quiere tener el mismo header visible siempre */}
       <Switch> 
         <Route exact path='/' component={HomePage} />
         <Route path='/shop' component={ShopPage} />
