@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
+import { connect } from 'react-redux';
 
 import './App.css';
 
@@ -8,43 +9,35 @@ import ShopPage from './pages/shop/shop.component.jsx';
 import Header from './components/header/header.component.jsx';
 import SingInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component.jsx';
 import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+import { setCurrentUser } from './redux/user/user.actions';
 
 
 class App extends React.Component{
-  constructor(){
-    
-    super();
-
-    this.state = {
-      currentUser: null
-    };
-
-  }
 
   unsubscribeFromAuth = null;
 
   componentDidMount() {
+    const { setCurrentUser } = this.props;
+
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
-      
-      if(userAuth) {
+      if (userAuth) {
         const userRef = await createUserProfileDocument(userAuth);
 
         userRef.onSnapshot(snapShot => {
-          this.setState({
-            currentUser: {
-              id: snapShot.id,
-              ...snapShot.data()
-            }
+          setCurrentUser({
+            id: snapShot.id,
+            ...snapShot.data()
           });
-          console.log(this.state);
         });
-      } else {
-        this.setState({ currentUser: userAuth });
       }
 
+      setCurrentUser(userAuth);
     });
   }
 
+  /*Calling the unsubscribe function when the component is about to unmount is the best way to make sure we don't get 
+  any memory leaks in our application related to listeners still being open even if the component that cares about 
+  the listener is no longer on the page.*/
   componentWillUnmount() {
     this.unsubscribeFromAuth();
   }
@@ -52,7 +45,7 @@ class App extends React.Component{
   render(){
     return (
       <div>
-        <Header currentUser={this.state.currentUser} /> {/* Al header lo queremos fuera del switch, porque independientemente de la página en la que se esté, se quiere tener el mismo header visible siempre */}
+        <Header /> { /* Al header lo queremos fuera del switch, porque independientemente de la página en la que se esté, se quiere tener el mismo header visible siempre */}
         <Switch> 
           <Route exact path='/' component={HomePage} />
           <Route path='/shop' component={ShopPage} />
@@ -64,7 +57,15 @@ class App extends React.Component{
   
 }
 
-export default App;
+// esta función solo se encarga de despachar una nueva acción, la que sea que queramos pasar, como action.
+const mapDispatchToProps = dispatch => ({
+  setCurrentUser: user => dispatch(setCurrentUser(user))
+});
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(App);
 
 
 // Route tiene 3 propiedades: exact - path - component. path y component son muy obvias, 
