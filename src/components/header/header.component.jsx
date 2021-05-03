@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux'; // connect es un HOC que nos permite modificar nuestros componentes para tener acceso a cosas relacionadas a redux
+import { createStructuredSelector } from 'reselect';
 
 import { auth } from '../../firebase/firebase.utils';
 import CartIcon from '../cart-icon/cart-icon.component';
 import CartDropdown from '../cart-dropdown/cart-dropdown.component';
+import { selectCartHidden }  from '../../redux/cart/cart.selectors';
+import { selectCurrentUser } from '../../redux/user/user.selectors';
 
 import { ReactComponent as Logo } from '../../assets/crown.svg'; // sintaxis especial en react para importar SVGs
 
@@ -33,10 +36,10 @@ const Header = ({ currentUser, hidden }) => (
     </div>
 )
 
-// donde state es el root reducer
-const mapStateToProps = ({user: { currentUser }, cart: { hidden }}) => ({
-    currentUser,
-    hidden
+// con createStructuredSelector no es necesario enviar state como parametro, sino que automaticamente hace el map con el respectivo selector
+const mapStateToProps = createStructuredSelector({
+    currentUser: selectCurrentUser,
+    hidden: selectCartHidden
 });
 
 export default connect(mapStateToProps)(Header);
